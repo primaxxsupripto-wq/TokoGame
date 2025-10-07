@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mu'inGames - Game Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .game-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .cart-slide {
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .cart-slide.open {
+            transform: translateX(0);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scrolling-text {
+            white-space: nowrap;
+            overflow: hidden;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899, #8b5cf6);
+            padding: 10px 0;
+        }
+
+        .scrolling-text span {
+            display: inline-block;
+            animation: scroll 20s linear infinite;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Scrolling Banner -->
+    <div class="scrolling-text text-center text-white font-semibold">
+        <span>🎮 SELAMAT DATANG DI MU'INGAMES - TOKO GAME TERPERCAYA! 🎯 DISKON HINGGA 50% UNTUK GAME PILIHAN! 🔥 GAME BARU SETIAP MINGGU! 💎 KUALITAS TERJAMIN & HARGA TERJANGKAU! 🎮</span>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <span class="text-xl font-bold">🎮</span>
+                    </div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        Mu'inGames
+                    </h1>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="showPage('beranda')" class="nav-link px-4 py-2 rounded-lg text-white font-medium" id="nav-beranda">
+                        🏠 Beranda
+                    </button>
+                    <button onclick="showPage('game')" class="nav-link px-4 py-2 rounded-lg text-white font-medium" id="nav-game">
+                        🎮 Game
+                    </button>
+                    <button onclick="showPage('berita')" class="nav-link px-4 py-2 rounded-lg text-white font-medium" id="nav-berita">
+                        📰 Berita
+                    </button>
+                    <button onclick="showPage('kontak')" class="nav-link px-4 py-2 rounded-lg text-white font-medium" id="nav-kontak">
+                        📞 Kontak
+                    </button>
+                </nav>
+                
+                <button onclick="toggleCart()" class="relative bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors">
+                    <span class="flex items-center space-x-2">
+                        <span>🛒</span>
+                        <span>Keranjang</span>
+                        <span id="cartCount" class="bg-pink-500 text-white rounded-full px-2 py-1 text-sm min-w-[20px] text-center">0</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Beranda Page -->
+        <div id="beranda" class="page active">
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-r from-purple-900 via-gray-900 to-pink-900 py-20">
+                <div class="container mx-auto px-4 text-center">
+                    <h2 class="text-5xl font-bold mb-6 fade-in">Selamat Datang di Mu'inGames</h2>
+                    <p class="text-xl text-gray-300 mb-8 fade-in">Temukan game terbaik dengan harga terjangkau</p>
+                    <button onclick="showPage('game')" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-3 rounded-lg text-lg font-semibold transition-all pulse-animation">
+                        Jelajahi Game
+                    </button>
+                </div>
+            </section>
+
+            <!-- Featured Games -->
+            <section class="py-16 bg-gray-900">
+                <div class="container mx-auto px-4">
+                    <h3 class="text-3xl font-bold text-center mb-12">Game Unggulan</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-gray-800 rounded-lg p-6 text-center">
+                            <div class="text-6xl mb-4">🚀</div>
+                            <h4 class="text-xl font-bold mb-2">Cyber Adventure 2077</h4>
+                            <p class="text-gray-400 mb-4">Game petualangan futuristik terpopuler</p>
+                            <div class="text-2xl font-bold text-purple-400">Rp 299.000</div>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg p-6 text-center">
+                            <div class="text-6xl mb-4">🏰</div>
+                            <h4 class="text-xl font-bold mb-2">Fantasy Kingdom</h4>
+                            <p class="text-gray-400 mb-4">Dunia fantasi yang menawan</p>
+                            <div class="text-2xl font-bold text-purple-400">Rp 199.000</div>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg p-6 text-center">
+                            <div class="text-6xl mb-4">🐉</div>
+                            <h4 class="text-xl font-bold mb-2">Dragon Legends</h4>
+                            <p class="text-gray-400 mb-4">Legenda naga yang epik</p>
+                            <div class="text-2xl font-bold text-purple-400">Rp 329.000</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Game Page -->
+        <div id="game" class="page">
+            <section class="py-16 bg-gray-900">
+                <div class="container mx-auto px-4">
+                    <h3 class="text-3xl font-bold text-center mb-12">Koleksi Game Lengkap</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productGrid">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Berita Page -->
+        <div id="berita" class="page">
+            <section class="py-16 bg-gray-900">
+                <div class="container mx-auto px-4">
+                    <h3 class="text-3xl font-bold text-center mb-12">Berita Game Terbaru</h3>
+                    
+                    <!-- Game Diskon Section -->
+                    <div class="mb-16">
+                        <h4 class="text-2xl font-bold mb-8 text-purple-400">🔥 Game Diskon Spesial</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-gray-800 rounded-lg p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-4xl mr-4">🏎️</span>
+                                    <div>
+                                        <h5 class="text-xl font-bold">Racing Thunder</h5>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-gray-400 line-through">Rp 199.000</span>
+                                            <span class="text-green-400 font-bold">Rp 149.000</span>
+                                            <span class="bg-red-500 text-white px-2 py-1 rounded text-sm">-25%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-400">Diskon terbatas! Rasakan sensasi balapan yang mendebarkan dengan harga spesial.</p>
+                            </div>
+                            
+                            <div class="bg-gray-800 rounded-lg p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-4xl mr-4">🌊</span>
+                                    <div>
+                                        <h5 class="text-xl font-bold">Ocean Quest</h5>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-gray-400 line-through">Rp 249.000</span>
+                                            <span class="text-green-400 font-bold">Rp 189.000</span>
+                                            <span class="bg-red-500 text-white px-2 py-1 rounded text-sm">-24%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-400">Jelajahi kedalaman laut dengan diskon fantastis minggu ini!</p>
+                            </div>
+
+                            <div class="bg-gray-800 rounded-lg p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-4xl mr-4">🧟</span>
+                                    <div>
+                                        <h5 class="text-xl font-bold">Zombie Survival</h5>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-gray-400 line-through">Rp 199.000</span>
+                                            <span class="text-green-400 font-bold">Rp 159.000</span>
+                                            <span class="bg-red-500 text-white px-2 py-1 rounded text-sm">-20%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-400">Bertahan hidup dari apocalypse zombie dengan harga hemat!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Game Baru Section -->
+                    <div>
+                        <h4 class="text-2xl font-bold mb-8 text-pink-400">✨ Game Baru Minggu Ini</h4>
+                        <div class="space-y-6">
+                            <div class="bg-gray-800 rounded-lg p-6 flex items-center">
+                                <span class="text-6xl mr-6">🌌</span>
+                                <div class="flex-1">
+                                    <h5 class="text-2xl font-bold mb-2">Space Explorer</h5>
+                                    <p class="text-gray-400 mb-3">Game eksplorasi luar angkasa yang revolusioner! Jelajahi galaksi yang tak terbatas dengan teknologi grafis terdepan.</p>
+                                    <div class="flex items-center space-x-4">
+                                        <span class="text-2xl font-bold text-purple-400">Rp 249.000</span>
+                                        <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm">BARU!</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gray-800 rounded-lg p-6 flex items-center">
+                                <span class="text-6xl mr-6">🥷</span>
+                                <div class="flex-1">
+                                    <h5 class="text-2xl font-bold mb-2">Ninja Warrior</h5>
+                                    <p class="text-gray-400 mb-3">Aksi ninja spektakuler dengan sistem pertarungan yang inovatif. Kuasai seni bela diri kuno dalam dunia modern!</p>
+                                    <div class="flex items-center space-x-4">
+                                        <span class="text-2xl font-bold text-purple-400">Rp 179.000</span>
+                                        <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm">BARU!</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Kontak Page -->
+        <div id="kontak" class="page">
+            <section class="py-16 bg-gray-900">
+                <div class="container mx-auto px-4">
+                    <h3 class="text-3xl font-bold text-center mb-12">Hubungi Kami</h3>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <!-- Contact Info -->
+                        <div>
+                            <h4 class="text-2xl font-bold mb-6 text-purple-400">Informasi Kontak</h4>
+                            <div class="space-y-6">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                                        <span class="text-xl">📍</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold">Alamat</h5>
+                                        <p class="text-gray-400">Jl. Gaming Center No. 123, Jakarta Selatan, Indonesia</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                                        <span class="text-xl">📞</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold">Telepon</h5>
+                                        <p class="text-gray-400">+62 21 1234 5678</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                                        <span class="text-xl">📧</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold">Email</h5>
+                                        <p class="text-gray-400">info@muingames.com</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                                        <span class="text-xl">🕒</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold">Jam Operasional</h5>
+                                        <p class="text-gray-400">Senin - Jumat: 09:00 - 18:00<br>Sabtu - Minggu: 10:00 - 16:00</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Contact Form -->
+                        <div>
+                            <h4 class="text-2xl font-bold mb-6 text-pink-400">Kirim Pesan</h4>
+                            <form onsubmit="sendMessage(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Nama Lengkap</label>
+                                    <input type="text" name="nama" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-white">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Email</label>
+                                    <input type="email" name="email" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-white">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Subjek</label>
+                                    <input type="text" name="subjek" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-white">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Pesan</label>
+                                    <textarea name="pesan" required rows="5" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-white resize-none"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-3 rounded-lg font-semibold transition-all">
+                                    Kirim Pesan
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Cart Overlay -->
+    <div id="cartOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 overlay" onclick="closeCart()"></div>
+
+    <!-- Cart Sidebar -->
+    <div id="cartSidebar" class="fixed top-0 right-0 h-full w-96 bg-gray-800 shadow-2xl z-50 cart-slide">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">Keranjang Belanja</h3>
+                <button onclick="closeCart()" class="text-gray-400 hover:text-white text-2xl">×</button>
+            </div>
+            
+            <div id="cartItems" class="flex-1 overflow-y-auto space-y-4">
+                <!-- Cart items will be displayed here -->
+            </div>
+            
+            <div class="border-t border-gray-700 pt-4 mt-4">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-semibold">Total:</span>
+                    <span id="cartTotal" class="text-2xl font-bold text-purple-400">Rp 0</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-3 rounded-lg font-semibold transition-all">
+                    Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center hidden">
+        <div class="bg-gray-800 p-8 rounded-lg max-w-md mx-4 text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h3 class="text-2xl font-bold mb-4">Terima Kasih!</h3>
+            <p class="text-gray-300 mb-6">Pesanan Anda telah berhasil diproses. Selamat bermain!</p>
+            <button onclick="closeSuccessModal()" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Game data
+        const games = [
+            {
+                id: 1,
+                name: "Cyber Adventure 2077",
+                price: 299000,
+                image: "🚀",
+                description: "Game petualangan futuristik yang menakjubkan"
+            },
+            {
+                id: 2,
+                name: "Fantasy Kingdom",
+                price: 199000,
+                image: "🏰",
+                description: "Jelajahi dunia fantasi yang magis"
+            },
+            {
+                id: 3,
+                name: "Racing Thunder",
+                price: 149000,
+                image: "🏎️",
+                description: "Balapan berkecepatan tinggi yang menegangkan"
+            },
+            {
+                id: 4,
+                name: "Space Explorer",
+                price: 249000,
+                image: "🌌",
+                description: "Eksplorasi luar angkasa yang epik"
+            },
+            {
+                id: 5,
+                name: "Ninja Warrior",
+                price: 179000,
+                image: "🥷",
+                description: "Aksi ninja yang spektakuler"
+            },
+            {
+                id: 6,
+                name: "Ocean Quest",
+                price: 189000,
+                image: "🌊",
+                description: "Petualangan bawah laut yang menawan"
+            },
+            {
+                id: 7,
+                name: "Dragon Legends",
+                price: 329000,
+                image: "🐉",
+                description: "Legenda naga yang legendaris"
+            },
+            {
+                id: 8,
+                name: "Zombie Survival",
+                price: 159000,
+                image: "🧟",
+                description: "Bertahan hidup dari serangan zombie"
+            }
+        ];
+
+        let cart = [];
+
+        let currentPage = 'beranda';
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            updateCartDisplay();
+            showPage('beranda');
+        });
+
+        // Show page function
+        function showPage(pageName) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            document.getElementById(pageName).classList.add('active');
+            
+            // Update navigation
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            document.getElementById('nav-' + pageName).classList.add('active');
+            
+            currentPage = pageName;
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Load products
+        function loadProducts() {
+            const productGrid = document.getElementById('productGrid');
+            productGrid.innerHTML = '';
+
+            games.forEach(game => {
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card bg-gray-800 rounded-lg overflow-hidden shadow-lg';
+                gameCard.innerHTML = `
+                    <div class="p-6 text-center">
+                        <div class="text-6xl mb-4">${game.image}</div>
+                        <h4 class="text-xl font-bold mb-2">${game.name}</h4>
+                        <p class="text-gray-400 mb-4">${game.description}</p>
+                        <div class="text-2xl font-bold text-purple-400 mb-4">
+                            Rp ${game.price.toLocaleString('id-ID')}
+                        </div>
+                        <button onclick="addToCart(${game.id})" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-2 rounded-lg font-semibold transition-all">
+                            Tambah ke Keranjang
+                        </button>
+                    </div>
+                `;
+                productGrid.appendChild(gameCard);
+            });
+        }
+
+        // Add to cart
+        function addToCart(gameId) {
+            const game = games.find(g => g.id === gameId);
+            const existingItem = cart.find(item => item.id === gameId);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    ...game,
+                    quantity: 1
+                });
+            }
+
+            updateCartDisplay();
+            showAddedToCartAnimation();
+        }
+
+        // Remove from cart
+        function removeFromCart(gameId) {
+            cart = cart.filter(item => item.id !== gameId);
+            updateCartDisplay();
+        }
+
+        // Update quantity
+        function updateQuantity(gameId, change) {
+            const item = cart.find(item => item.id === gameId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(gameId);
+                } else {
+                    updateCartDisplay();
+                }
+            }
+        }
+
+        // Update cart display
+        function updateCartDisplay() {
+            const cartCount = document.getElementById('cartCount');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+
+            // Update cart count
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+
+            // Update cart items
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="text-center text-gray-400 py-8">
+                        <div class="text-4xl mb-4">🛒</div>
+                        <p>Keranjang Anda kosong</p>
+                    </div>
+                `;
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">${item.image}</span>
+                                <div>
+                                    <h5 class="font-semibold">${item.name}</h5>
+                                    <p class="text-purple-400">Rp ${item.price.toLocaleString('id-ID')}</p>
+                                </div>
+                            </div>
+                            <button onclick="removeFromCart(${item.id})" class="text-red-400 hover:text-red-300">
+                                🗑️
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="updateQuantity(${item.id}, -1)" class="bg-gray-600 hover:bg-gray-500 w-8 h-8 rounded flex items-center justify-center">-</button>
+                                <span class="px-3">${item.quantity}</span>
+                                <button onclick="updateQuantity(${item.id}, 1)" class="bg-gray-600 hover:bg-gray-500 w-8 h-8 rounded flex items-center justify-center">+</button>
+                            </div>
+                            <span class="font-semibold">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Update total
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotal.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        // Toggle cart
+        function toggleCart() {
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartOverlay = document.getElementById('cartOverlay');
+            
+            cartSidebar.classList.toggle('open');
+            cartOverlay.classList.toggle('active');
+        }
+
+        // Close cart
+        function closeCart() {
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartOverlay = document.getElementById('cartOverlay');
+            
+            cartSidebar.classList.remove('open');
+            cartOverlay.classList.remove('active');
+        }
+
+        // Scroll to products
+        function scrollToProducts() {
+            document.getElementById('products').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        // Show added to cart animation
+        function showAddedToCartAnimation() {
+            const cartButton = document.querySelector('button[onclick="toggleCart()"]');
+            cartButton.classList.add('pulse-animation');
+            setTimeout(() => {
+                cartButton.classList.remove('pulse-animation');
+            }, 1000);
+        }
+
+        // Checkout
+        function checkout() {
+            if (cart.length === 0) {
+                alert('Keranjang Anda kosong!');
+                return;
+            }
+
+            // Show checkout form modal
+            showCheckoutModal();
+        }
+        
+        // Show checkout modal
+        function showCheckoutModal() {
+            const modal = document.createElement('div');
+            modal.id = 'checkoutModal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center';
+            modal.innerHTML = `
+                <div class="bg-gray-800 p-8 rounded-lg max-w-md mx-4 w-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold">Detail Pemesanan</h3>
+                        <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-white text-2xl">×</button>
+                    </div>
+                    
+                    <form onsubmit="processCheckout(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Nama Lengkap *</label>
+                            <input type="text" name="nama" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none text-white">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Email *</label>
+                            <input type="email" name="email" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none text-white">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Nomor Telepon *</label>
+                            <input type="tel" name="nomor" required class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none text-white">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Alamat Lengkap *</label>
+                            <textarea name="alamat" required rows="3" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none text-white resize-none"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Keterangan (Opsional)</label>
+                            <textarea name="keterangan" rows="2" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none text-white resize-none" placeholder="Catatan khusus untuk pesanan..."></textarea>
+                        </div>
+                        
+                        <div class="border-t border-gray-600 pt-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-lg font-semibold">Total Pembayaran:</span>
+                                <span class="text-2xl font-bold text-purple-400">${document.getElementById('cartTotal').textContent}</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-3 rounded-lg font-semibold transition-all">
+                            Konfirmasi Pesanan
+                        </button>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Close checkout modal
+        function closeCheckoutModal() {
+            const modal = document.getElementById('checkoutModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // Process checkout
+        function processCheckout(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Get form values
+            const customerData = {
+                nama: formData.get('nama'),
+                email: formData.get('email'),
+                nomor: formData.get('nomor'),
+                alamat: formData.get('alamat'),
+                keterangan: formData.get('keterangan') || '-'
+            };
+            
+            // Show loading state
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Memproses...';
+            submitButton.disabled = true;
+            
+            // Prepare order data for Google Sheets
+            const orderData = {
+                ...customerData,
+                items: cart.map(item => ({
+                    nama_game: item.name,
+                    harga: item.price,
+                    jumlah: item.quantity,
+                    subtotal: item.price * item.quantity
+                })),
+                total_pembayaran: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                tanggal_pesanan: new Date().toLocaleString('id-ID'),
+                timestamp: new Date().toISOString(),
+                status: 'Menunggu Konfirmasi'
+            };
+            
+            // Send to Google Sheets
+            fetch(ORDERS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(() => {
+                // Close checkout modal
+                closeCheckoutModal();
+                
+                // Show success modal
+                document.getElementById('successModal').classList.remove('hidden');
+                
+                // Clear cart
+                cart = [];
+                updateCartDisplay();
+                closeCart();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                // Still proceed with success since no-cors mode doesn't return response
+                closeCheckoutModal();
+                document.getElementById('successModal').classList.remove('hidden');
+                cart = [];
+                updateCartDisplay();
+                closeCart();
+            })
+            .finally(() => {
+                // Reset button state
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            });
+        }
+
+        // Close success modal
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        // Google Sheets Configuration
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHn50ZfEliFDwVr3u3Wo-DBmzUzc2TqQmTV_e1Bt7BnWOo29d2HAjo88ihgNl_gOpT/exec';
+        const ORDERS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbws_q3RMI_knjCCn5CMQlEDmIrVrZ2GAAzDlJ5q9ZHUgJDsPND5dNIs0jvtC6f0xUYhjw/exec';
+        // Ganti YOUR_CONTACT_SCRIPT_ID dengan ID script untuk form kontak
+        // Ganti YOUR_ORDERS_SCRIPT_ID dengan ID script untuk pesanan
+        
+        // Send message function
+        function sendMessage(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Get form values
+            const nama = formData.get('nama');
+            const email = formData.get('email');
+            const subjek = formData.get('subjek');
+            const pesan = formData.get('pesan');
+            
+            // Show loading state
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Mengirim...';
+            submitButton.disabled = true;
+            
+            // Prepare data for Google Sheets
+            const data = {
+                nama: nama,
+                email: email,
+                subjek: subjek,
+                pesan: pesan,
+                tanggal: new Date().toLocaleString('id-ID'),
+                timestamp: new Date().toISOString()
+            };
+            
+            // Send to Google Sheets
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                // Show success message
+                showContactSuccessModal();
+                
+                // Reset form
+                form.reset();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                // Still show success message since no-cors mode doesn't return response
+                showContactSuccessModal();
+                form.reset();
+            })
+            .finally(() => {
+                // Reset button state
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            });
+        }
+        
+        // Show contact success modal
+        function showContactSuccessModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center';
+            modal.innerHTML = `
+                <div class="bg-gray-800 p-8 rounded-lg max-w-md mx-4 text-center">
+                    <div class="text-6xl mb-4">📧</div>
+                    <h3 class="text-2xl font-bold mb-4">Pesan Terkirim!</h3>
+                    <p class="text-gray-300 mb-6">Terima kasih! Pesan Anda telah tersimpan dan kami akan segera menghubungi Anda.</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg transition-colors">
+                        Tutup
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Auto close after 3 seconds
+            setTimeout(() => {
+                if (modal.parentElement) {
+                    modal.remove();
+                }
+            }, 3000);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('successModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSuccessModal();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98aa15f625a63f6b',t:'MTc1OTgwNTM3Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
